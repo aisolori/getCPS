@@ -1,12 +1,17 @@
 Package: getCPS
 Type: Package
-Title: Obtain CPI Data from Census API
-Version: 0.1.0
-Author: Antonio Solorio 
-Maintainer: The package maintainer <aisolorio@detr.nv.gov>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Title: What the Package Does (Title Case)
+Version: 0.1.1
+Authors@R:
+    person(given = "Antonio",
+           family = "Solorio Ramirez",
+           role = c("aut", "cre"),
+           email = "aisolorio@detr.nv.gov")
+Description: A collection of wrappers around the 'cpsR' and 'censusapi' packages.
+    Usefull for collecting multiple years of Current Population Survey (CPS)
+    microdata. Makes use of parallel processing through the 'furrr' package to speed
+    up data retrieval and labeling. 
+License: MIT
 Encoding: UTF-8
 LazyData: true
 Imports: 
