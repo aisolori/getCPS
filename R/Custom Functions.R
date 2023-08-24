@@ -1,3 +1,14 @@
+#' @importFrom data.table data.table rbindlist
+#' @importFrom dplyr arrange filter left_join mutate rename row_number select
+#' @importFrom jsonlite fromJSON
+#' @importFrom lubridate ymd year month
+#' @importFrom magrittr %>%
+#' @importFrom purrr map_dfr imap_dfr
+#' @importFrom tibble tibble
+#' @importFrom tidyr pivot_longer pivot_wider
+NULL
+
+
 #' Obtain CPS Data for All States
 #'
 #' Fetches CPS (Current Population Survey) data across all states from the Census API.
@@ -18,7 +29,9 @@
 #'
 #' @export
 get_cps_data_all_states<- function(year_range, variable_list, state_filter = FALSE,
-                                   census_api_key =Sys.getenv("CENSUS_API_KEY")){
+                                   census_api_key = get_key()){
+  check_key(census_api_key)
+  test_key(census_api_key)
   plan(multisession)
   state_filter<-as.character(state_filter)
   weight_list<- c()
@@ -89,7 +102,11 @@ get_cps_data_all_states<- function(year_range, variable_list, state_filter = FAL
 #' }
 #'
 #' @export
-get_cps_data_state<- function(year_range,variable_list,census_api_key = Sys.getenv("CENSUS_API_KEY") ,state_code = "32") {
+get_cps_data_state<- function(year_range,variable_list,census_api_key = get_key() ,state_code = "32") {
+
+  check_key(census_api_key)
+  test_key(census_api_key)
+
   weight_list = c()
   plan(multisession)
 
