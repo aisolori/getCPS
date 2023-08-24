@@ -7,7 +7,7 @@
 get_cps_data_state(
   year_range,
   variable_list,
-  census_api_key = Sys.getenv("CENSUS_API_KEY"),
+  census_api_key = get_key(),
   state_code = "32"
 )
 }

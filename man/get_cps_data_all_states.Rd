@@ -8,7 +8,7 @@ get_cps_data_all_states(
   year_range,
   variable_list,
   state_filter = FALSE,
-  census_api_key = Sys.getenv("CENSUS_API_KEY")
+  census_api_key = get_key()
 )
 }
 \arguments{
