@@ -4,6 +4,6 @@ Still in early development... working on making the package downloadable from gi
 
 
 # Download & Install
-Click on the package name below to download the source file
+Click on the package name below to download the source file \n
 [getCPS 0.1.1](https://github.com/aisolori/getCPS/releases/download/getCPS-package/getCPS_0.1.1.tar.gz)
 
