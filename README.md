@@ -7,4 +7,8 @@ Still in early development... working on making the package downloadable from gi
 Click on the package name below to download the source file  
 [getCPS 0.1.1](https://github.com/aisolori/getCPS/releases/download/getCPS-package/getCPS_0.1.1.tar.gz)
 
+Once downloaded, use the script below to install
+```{r}
+install.packages("Path to downloaded file", repos = NULL, type = "source")
+```
 
