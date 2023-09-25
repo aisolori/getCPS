@@ -17,14 +17,8 @@ If you don't have `devtools` installed yet, you can easily get it from CRAN:
 ```r
 install.packages("devtools")
 ```
+If you are unable to use devtools try **Method 2:**
 ### Method 2: Manual Download and Install
-**Download the Package:**
-Click on the package name below to download the source file:
-getCPS 0.1.1
-
-Install the Package:
-After downloading the .tar.gz file, open your R session or RStudio and install the package using the following script:
-
 1. **Download the Package**:  
 Click on the package name below to download the source file:  
 [getCPS 0.1.1](https://github.com/aisolori/getCPS/releases/download/getCPS-package/getCPS_0.1.1.tar.gz)
@@ -34,5 +28,6 @@ Once you've downloaded the `.tar.gz` file, open your R session or RStudio and us
 
 ```r
 install.packages("path_to_downloaded_file/getCPS_0.1.1.tar.gz", repos = NULL, type = "source")
+```
 
 
