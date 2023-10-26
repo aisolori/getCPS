@@ -1,14 +1,3 @@
-#' @importFrom data.table data.table rbindlist
-#' @importFrom dplyr arrange filter left_join mutate rename row_number select
-#' @importFrom jsonlite fromJSON
-#' @importFrom lubridate ymd year month
-#' @importFrom magrittr %>%
-#' @importFrom purrr map_dfr imap_dfr
-#' @importFrom tibble tibble
-#' @importFrom tidyr pivot_longer pivot_wider
-NULL
-
-
 #' Obtain CPS Data for All States
 #'
 #' Fetches CPS (Current Population Survey) data across all states from the Census API.
@@ -29,9 +18,7 @@ NULL
 #'
 #' @export
 get_cps_data_all_states<- function(year_range, variable_list, state_filter = FALSE,
-                                   census_api_key = get_key()){
-  check_key(census_api_key)
-  test_key(census_api_key)
+                                   census_api_key =Sys.getenv("CENSUS_API_KEY")){
   plan(multisession)
   state_filter<-as.character(state_filter)
   weight_list<- c()
@@ -57,12 +44,12 @@ get_cps_data_all_states<- function(year_range, variable_list, state_filter = FAL
     #Loop through months in parallel
     data_per_year <- future_map_dfr(months, function(month){
       tryCatch({
-        data <- suppressMessages(get_basic(
+        data <- get_basic(
           year = as.integer(year),
           month = month,
           vars = variable_list,
           convert = FALSE,
-          key = census_api_key)) %>%
+          key = census_api_key) %>%
           mutate(date = ymd(paste(year,month,"01",sep = "-")))
 
         # Apply state filter only if state_filter is not FALSE
@@ -90,7 +77,7 @@ get_cps_data_all_states<- function(year_range, variable_list, state_filter = FAL
 #'
 #' @param year_range A vector of years for which data is to be fetched.
 #' @param variable_list A list of variables to be included in the fetched data.
-#' @param census_api_key Your Census API key. Defaults to the key stored in the system environment "CENSUS_API_KEY".
+#' @param api_key Your Census API key. Defaults to the key stored in the system environment "CENSUS_API_KEY".
 #' @param state_code A character string specifying the state FIPS code for which data should be fetched.
 #'        Default is "32", which is the FIPS code for Nevada. Only accepts one state code at a time.
 #'
@@ -102,11 +89,7 @@ get_cps_data_all_states<- function(year_range, variable_list, state_filter = FAL
 #' }
 #'
 #' @export
-get_cps_data_state<- function(year_range,variable_list,census_api_key = get_key() ,state_code = "32") {
-
-  check_key(census_api_key)
-  test_key(census_api_key)
-
+get_cps_data_state<- function(year_range,variable_list,api_key = Sys.getenv("CENSUS_API_KEY") ,state_code = "32") {
   weight_list = c()
   plan(multisession)
 
@@ -133,7 +116,7 @@ get_cps_data_state<- function(year_range,variable_list,census_api_key = get_key(
                         vintage = year,
                         region = paste0("state:",state_code),
                         vars = variable_list,
-                        key = census_api_key) %>%
+                        key = api_key) %>%
           mutate(DATE =  ymd(paste(year,month,"01",sep = "-")))
 
         return(df)
@@ -149,14 +132,14 @@ get_cps_data_state<- function(year_range,variable_list,census_api_key = get_key(
   return(cps_data)
 }
 
-#' Check for Changes in JSON Responses from Census's CPS Basic Microdata Across Years and Months
+#' Check for Changes in JSON Responses Across Years and Months
 #'
-#' This function checks whether JSON responses for specified variables in the CPS-Basic  Microdata change across a range of years and months in the Census API.
+#' This function checks whether JSON responses for specified variables change across a range of years and months.
 #' It fetches the JSON data for each variable for each year and month in the given range and compares it
 #' to the previous month's JSON to detect changes.
 #'
-#' @param variable_list A list of variable names for which the JSON data will be fetched and compared.
 #' @param year_range A vector of years over which the JSON data should be checked for changes.
+#' @param variable_list A list of variable names for which the JSON data will be fetched and compared.
 #'
 #' @return A data frame with columns 'variable', 'year', 'month', 'same_as_previous', and 'found'. Each row corresponds
 #'         to a variable, a year, and a month. 'same_as_previous' is TRUE if the JSON data for that variable, year,
@@ -171,7 +154,7 @@ get_cps_data_state<- function(year_range,variable_list,census_api_key = get_key(
 #' }
 #'
 #' @export
-json_changes <- function(variable_list, year_range) {
+json_changes <- function(year_range, variable_list) {
 
   process_variable_year <- function(var, year) {
 
@@ -182,7 +165,7 @@ json_changes <- function(variable_list, year_range) {
       fromJSON(paste0("https://api.census.gov/data/", year - 1, "/cps/basic/", months[12], "/variables/", var, ".json"))
     }, error = function(e) {
       NULL
-    },warning=function(w){NULL})
+    })
 
     for (month in 1:12) {
       prev_month <- ifelse(month == 1, 12, month - 1)
@@ -192,7 +175,7 @@ json_changes <- function(variable_list, year_range) {
         fromJSON(paste0("https://api.census.gov/data/", year, "/cps/basic/", months[month], "/variables/", var, ".json"))
       }, error = function(e) {
         NULL
-      },warning=function(w){NULL})
+      })
 
       if (!is.null(prev_json) & !is.null(var_json)) {
         prev_items_str <- sort(paste(names(prev_json$values$item), prev_json$values$item, sep = ":"))
@@ -216,92 +199,41 @@ json_changes <- function(variable_list, year_range) {
   plan(multisession)
 
   results <- future_map2_dfr(expand_grid_data$variable, expand_grid_data$year, process_variable_year, .progress = TRUE)
-
-  # results<-results%>%
-  #   filter(same_as_previous %in% c(NA,FALSE) | found == FALSE)
-
-  if(nrow(results) == 0){
-    return(print(paste0("No changes detected")))
-  }
+  results<-results%>%
+    filter(same_as_previous %in% c(NA,FALSE) | found == FALSE)
 
   return(results)
 }
+
+
 #' Label CPS Data Variables
 #'
 #' This function takes CPS data and labels its variables based on the metadata fetched from JSON files
 #' hosted by the Census Bureau's API. It labels data across a range of years and returns a data frame
 #' with labeled variables.
 #'
-#' @param cps_data A data frame containing CPS data. It must have a date column from which the year can be extracted.
-#'        By default, the function looks for a column named "DATE" (case-insensitive). If your date column has a different name,
-#'        specify it using the `date_column` argument.
-#' @param variable_list A character vector specifying which variables to label. If not provided,
-#'        the function will label all variables excluding those in the default "variables_not_to_label" list.
-#'        variable_list is not required when calling label_data() immediately after get_cps_data_state() or
-#'        get_cps_data_all_states().
-#' @param date_column A character scalar indicating the name of the date column in `cps_data` if it's different
-#'        from "DATE". This argument ensures the function can work even if the date column has different cases
-#'        (e.g., "Date", "date", "daTe") or entirely different names. If omitted, the function will look for a column
-#'        named "DATE" (case-insensitive).
+#' @param cps_data A data frame containing CPS data with a 'DATE' column from which the year can be extracted.
 #'
 #' @return A data frame with labeled variables. If a label does not exist for a particular variable
 #'         or year, the original value remains unchanged.
 #'
 #' @examples
 #' \dontrun{
-#' cps_sample_data <- get_cps_data_state(2022,"PEMLR")
+#' cps_sample_data <- get_cps_data_all_states(2022,"PEMLR")
 #' labeled_data <- label_data(cps_sample_data)
-#'
-#' custom_table <- get_cps_data_all_states(2022,"PEMLR") %>% mutate(random_col = "x")
-#' labeled_data_2 <- label_data(custom_table, c("PEMLR"))
-#'
-#' # If your date column is named differently:
-#' cps_sample_data_with_custom_date <- get_cps_data_state(2022,"PEMLR")%>%rename(customDate = DATE)
-#' labeled_data_3 <- label_data(cps_sample_data_with_custom_date, date_column = "customDate")
+#' head(labeled_data)
 #' }
 #'
 #' @export
-label_data <- function(cps_data, variable_list = NULL, date_column = NULL) {
-  # Helper function to check if a column is of Date type
-  check_date_type <- function(column_name, data) {
-    if (is.Date(data[[column_name]])) {
-      return(TRUE)
-    } else {
-      stop(paste0(column_name, " column needs to be converted to <date> data type, its current data type is: ",
-                  class(data[[column_name]], '\n')
-      )
-      )
-    }
-  }
+label_data <- function(cps_data) {
+  cps_data$year <- as.character(year(cps_data$DATE))
+  year_range <- year(cps_data$DATE) %>% unique()
 
-  # If date_column is NULL or empty, try to find a 'DATE' column regardless of its case
-  if (is.null(date_column)) {
-    potential_date_column <- names(cps_data)[which(toupper(names(cps_data)) == "DATE")]
-
-    if (length(potential_date_column) > 0) {
-      date_column <- potential_date_column[1]  # assign the first match
-    } else {
-      stop("No valid date column found")
-    }
-  }
-
-  # Now check the date_column for Date type
-  if (check_date_type(date_column, cps_data)) {
-    cps_data$year <- as.character(year(cps_data[[date_column]]))
-    year_range <- year(cps_data[[date_column]]) %>% unique()
-  }
-
-
-
-  #cps_data$year <- as.character(year(cps_data$DATE))
- # year_range <- year(cps_data$DATE) %>% unique()
-
-  if(length(variable_list) == 0){
-    variables_not_to_label <- c("HWHHWGT", "PWSSWGT", "DATE", "year", "state")
-  variable_list <- names(cps_data)[!(names(cps_data)) %in% variables_not_to_label]}
+  variables_not_to_label <- c("HWHHWGT", "PWSSWGT", "DATE", "year", "state")
+  variables_list <- names(cps_data)[!(names(cps_data)) %in% variables_not_to_label]
 
   cat("Downloading Labels from JSON files\n")
-  variable_labels_list <- pblapply(variable_list, function(variable) {
+  variable_labels_list <- pblapply(variables_list, function(variable) {
     variable_labels_per_year <- list()
 
     for (year in year_range) {
@@ -327,16 +259,16 @@ label_data <- function(cps_data, variable_list = NULL, date_column = NULL) {
   variable_labels_df <- purrr::imap_dfr(variable_labels_list, function(labels, variable) {
     purrr::map_dfr(names(labels), function(year) {
       if (is.null(labels[[year]]$labels)) {
-        tibble::tibble(variable = variable, year = year, code = NA_character_, label = NA_character_)
+        tibble::tibble(variable = variable, year = year, value = NA_character_, label = NA_character_)
       } else {
         labels_unlisted <- unlist(labels[[year]]$labels)
-        tibble::tibble(variable = variable, year = year, code = names(labels_unlisted), label = labels_unlisted)
+        tibble::tibble(variable = variable, year = year, value = names(labels_unlisted), label = labels_unlisted)
       }
     })
   }, .id = "variable")
 
   variable_labels_df <- variable_labels_df %>%
-    filter(!is.na(code))
+    filter(!is.na(value))
 
   variables_to_label <- variable_labels_df$variable %>%
     unique()
@@ -350,21 +282,19 @@ label_data <- function(cps_data, variable_list = NULL, date_column = NULL) {
 
     cps_data_long <- cps_data_year %>%
       mutate(row_id = row_number()) %>%
-      mutate(across(all_of(variables_to_label), as.character)) %>%
       pivot_longer(
         cols = all_of(variables_to_label),
         names_to = "variable",
-        values_to = "code"
-      )%>%
-      mutate(code = as.character(code))
+        values_to = "value"
+      )
 
     cps_data_labeled_long <- cps_data_long %>%
-      left_join(variable_labels_df, by = c("year", "variable", "code"))
+      left_join(variable_labels_df, by = c("year", "variable", "value"))
 
     cps_data_year_labeled <- cps_data_labeled_long %>%
       pivot_wider(
         names_from = "variable",
-        values_from = c("code", "label")
+        values_from = c("value", "label")
       ) %>%
       select(-c(row_id, year))
 
@@ -375,7 +305,7 @@ label_data <- function(cps_data, variable_list = NULL, date_column = NULL) {
 
   cat("Labeling Complete!\n")
 
-  return(rbindlist(cps_data_labeled, fill =TRUE))
+  return(rbindlist(cps_data_labeled))
 }
 
 
@@ -406,58 +336,6 @@ suggested_weight<-function(variable, year = "2023"){
     weight_var <- var_json$`suggested-weight`
     return(print(paste("Suggested weight for",variable, "is", weight_var)))
   }else if (!is.null(var_json)){message(paste(variable, "does not have suggested weight"))}
-}
-
-
-#' Function to get CPS Basic Variable Labels
-#'
-#' This function retrieves the labels for a given CPS basic variable for the specified year(s).
-#' It constructs a list of labels fetched from the Census API for the given variable(s) and year(s).
-#'
-#' @param var_name A character vector of variable name(s) to get labels for.
-#' @param year_range A character vector specifying the year(s) for which labels are required, default is "2023".
-#'
-#' @return If a single year and variable are provided, the function returns a data frame.
-#'         For multiple years or variables, it returns a nested list of data frames.
-#'
-#' @examples
-#' \dontrun{
-#'   labels <- get_labels("PEMLR")
-#'   print(labels)
-#'
-#'   labels_mult_years <- get_labels("PERRP", year_range = c(2019:2020))
-#'   print(labels_mult_years)
-#' }
-#'
-#' @export
-get_labels<-function(var_name, year_range = "2023"){
-
-  # Check if year_range is using its default value
-  if (identical(year_range, "2023")) {
-    message("year_range argument defaulting to 2023")
   }
-
-  #creates emtpy list that will store var_labels
-  var_labels_per_year<-list()
-
-  for (year in year_range) {
-    #var_json is a nested list of the response we get from the api
-    var_json <- fromJSON(
-      paste0("https://api.census.gov/data/", year, "/cps/basic/jan/variables/", toupper(var_name), ".json"))
-
-    #Construct df from var_json
-    var_labels_df<-data.frame(
-      code = names(var_json$values$item),
-      label = unlist(var_json$values$item, use.names = FALSE)
-    )
-
-    var_labels_per_year[[var_name]][[as.character(year)]]<-var_labels_df%>%arrange(code)
-  }
-  #If only one year and one variable are provided returns a simple frame
-  if (length(var_name)==1 & length(year_range) == 1){
-    return(var_labels_per_year[[var_name]][[year_range]])
-  }else{
-    return(var_labels_per_year)}
-}
 
 
