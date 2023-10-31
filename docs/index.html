@@ -58,10 +58,67 @@
 
       </header><div class="row">
   <div class="contents col-md-9">
-A collection of wrappers around the 'cpsR' and 'censusapi' packages.
-    Usefull for collecting multiple years of Current Population Survey (CPS)
-    microdata. Makes use of parallel processing through the 'furrr' package to speed
-    up data retrieval and labeling. 
+<div class="section level1">
+<div class="page-header"><h1 id="getcps">getCPS<a class="anchor" aria-label="anchor" href="#getcps"></a>
+</h1></div>
+<p>R Package for Pulling CPS Microdata from the Census API.</p>
+<p><code>getCPS</code> consists of a collection of wrappers around the <code>censusapi</code> &amp; <code>cpsR</code> packages. It is currently in early development.</p>
+<div class="section level2">
+<h2 id="download--install">Download &amp; Install<a class="anchor" aria-label="anchor" href="#download--install"></a>
+</h2>
+<div class="section level3">
+<h3 id="method-1-directly-from-github-using-devtools">Method 1: Directly from GitHub using <code>devtools</code>
+<a class="anchor" aria-label="anchor" href="#method-1-directly-from-github-using-devtools"></a>
+</h3>
+<p>If you have the <code>devtools</code> package installed, you can directly install <code>getCPS</code> from GitHub:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"aisolori/getCPS"</span>, dependencies <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p>This command will also ensure that all package dependencies are installed. If you don’t have <code>devtools</code> installed yet, you can easily get it from CRAN:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span></span></code></pre></div>
+<p>If you are unable to use install_github() try <strong>Method 2:</strong> ### Method 2: Manual Download and Install 1. <strong>Download the Package</strong>:<br>
+Click on the package name below to download the source file:<br><a href="https://github.com/aisolori/getCPS/releases/download/getCPS-package/getCPS_0.1.1.tar.gz" class="external-link">getCPS 0.1.1</a></p>
+<ol start="2" style="list-style-type: decimal">
+<li>
+<strong>Install the Package</strong>:<br>
+Once you’ve downloaded the <code>.tar.gz</code> file, open your R session or RStudio and use the following script to install:</li>
+</ol>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_local.html" class="external-link">install_local</a></span><span class="op">(</span><span class="st">"path_to_downloaded_file/getCPS_0.1.1.tar.gz"</span><span class="op">)</span></span></code></pre></div>
+<p><code><a href="https://remotes.r-lib.org/reference/install_local.html" class="external-link">devtools::install_local()</a></code> will ensure that dependencies needed for the package are installed.</p>
+</div>
+<div class="section level3">
+<h3 id="method-3">Method 3:<a class="anchor" aria-label="anchor" href="#method-3"></a>
+</h3>
+<p>If you are unable to use or install <code>devtools</code> the code below will also work, but will require manual installation of necesary dependencies. As you will likely hit errors similar to: <code>ERROR: dependencies 'cpsR', 'censusapi' are not available for package 'getCPS'</code></p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"path_to_downloaded_file/getCPS_0.1.1.tar.gz"</span>, repos <span class="op">=</span> <span class="cn">NULL</span>, type <span class="op">=</span> <span class="st">"source"</span><span class="op">)</span></span></code></pre></div>
+<p>All necessary dependencies can be installed directly via cran by running the following script in R:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Function to install a package if it's not already installed</span></span>
+<span><span class="va">install_if_not_present</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">package</span>, <span class="va">version</span> <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="va">package</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="va">package</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Package: "</span>, <span class="va">package</span>, <span class="st">" has been installed."</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Package: "</span>, <span class="va">package</span>, <span class="st">" already installed."</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># List of packages from the "Imports" and "Depends" sections of the DESCRIPTION file</span></span>
+<span><span class="va">packages_to_install</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>  <span class="st">"data.table"</span>, <span class="st">"dplyr"</span>, <span class="st">"jsonlite"</span>, <span class="st">"magrittr"</span>, <span class="st">"tibble"</span>, <span class="st">"tidyr"</span>, <span class="st">"rvest"</span>,</span>
+<span>  <span class="st">"furrr"</span>, <span class="st">"cpsR"</span>, <span class="st">"censusapi"</span>, <span class="st">"pbapply"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Installing the packages</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/invisible.html" class="external-link">invisible</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">packages_to_install</span>, <span class="va">install_if_not_present</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Print a message indicating that package installations are completed</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"All necessary packages have been installed or were already present."</span><span class="op">)</span></span></code></pre></div>
+</div>
+</div>
+</div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
