@@ -1,7 +1,7 @@
 # getCPS
 R Package for Pulling CPS Microdata from the Census API.
 
-`getCPS` consists of a collection of wrappers around the `censusapi` & `cpsR` packages. It is currently in early development.
+`getCPS` consists of a collection of wrappers around the `censusapi` & `cpsR` packages. <span style="color:red">It is currently in early development.</span>
 
 ## Download & Install
 ### Method 1: Directly from GitHub using `devtools`
