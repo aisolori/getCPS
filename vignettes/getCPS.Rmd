@@ -1,0 +1,57 @@
+---
+title: "Getting Started with getCPS"
+output:
+  html_document:
+    df_print: paged
+---
+
+**getCPS** is a package that allows for the fast fetching of CPS Basic microdata from the Census Bureau's API. Working with the Census Bureau's API can be a bit complicated and tedious and hence the main motivation behind this package.
+
+In order to get started we need to make sure that getCPS has beeen installed properly and that it can be loaded
+
+
+
+```{r load library, message=FALSE, warning=FALSE}
+library(getCPS)
+```
+
+If you were able to run call above without errors, you should be good to go! If you need help installing the package, the installation instrutions can be found at the main page of this website [Click Here](../index.html)
+
+## **Pulling data for a single state**
+
+Data for a single state can be pulled by using **`get_cps_data_state()`** and passing a year range and variable list as vectors, along with a FIPS state code. In this example we will use my home state of Nevada, whose FIPS state code is **'32'**, and we will pull data on labor force employment status **(PEMLR)** and age **(PRTAGE)** for each respondent. You must also include a Census API key in the function, or have one stored in your **`.Renviron`** file as **`"CENSUS_API_KEY"`**. If you don't have a Census API key you can obtain one at: [api.census.gov](https://api.census.gov/data/key_signup.html)
+
+```{r code to display, eval=FALSE}
+cps_data<-get_cps_data_state(year_range = c(2021:2023),
+                             variable_list = c('PEMLR', 'PRTAGE'),
+                             state_code = "32",
+                             census_api_key = "YOUR CENSUS API KEY")
+cps_data
+```
+
+```{r state data, echo=FALSE}
+cps_data<-get_cps_data_state(year_range = c(2021:2023), variable_list = c('PEMLR', 'PRTAGE'), state_code = "32")
+head(cps_data,10)
+```
+
+This should have returned a **`data.frame`** object, with some warnings about months that it was unable to retrieve. This guide was written on November 1st of 2023, so CPS microdata for the months of October, November, and December are not yet available, and hence why we see the warnings. The warnings can be useful in catching errors. For example sometimes certain variables are only available during certain time periods, and trying to retrieve variables in a time period when they are not available will trigger this warning.
+
+### **Understanding the output:**
+
+Our dataframe **`cps_data`** has a couple columns: **`state,PEMLR, PRTAGE, PWCMPWGT, PWSSWGT, and DATE`**.
+
+-   The **`state`** column represents the state FIPS code for the person's who information is recorded.
+
+-   **`PEMLR`** was one of the variables we requested, each value represents a unique code that matches the labor force status for each respondent, later in this guide we will see how we can convert these codes to labels which will make it easier to understand the response recorded.
+
+-   **`PRTAGE`** as mentioned earlier is the age of the respondent, topcoded in order to protect the privacy of the respondent. For example someone with an age of 97 would be topcoded at 85.
+
+-   **`PWCMPWGT`** and **`PWSSWGT`**, are statistical weights for each response and can be used to estimate aggragate population totals. Even though the weights were not requested explicitly in our **`get_cps_data_state()`** call, the function has built in logic that automatically pulls the suggested weights for each of the variables requested.
+
+    -   If you would like to know the suggested weight of a variable you can use the **`suggested_weight()`** function. For example if you wanted to know the suggested weight for **`PEMLR`** you coude use **`suggested_weight("PEMLR", year = "2023")`**. This will print the suggested weight for **`PEMLR`**, by default **`year`** is set to **"2023"** as suggested weights rarely differ from year to year in the CPS Basic microdata. :
+```{r}
+suggested_weight("PEMLR")
+```
+    
+
+-   **`DATE`** is just a column that keeps track of which month the response was recorded. This column is already of data type <date> making it easy to sort, filter and manipulate data based on specific dates.
