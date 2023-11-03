@@ -1,7 +1,7 @@
 #' @importFrom data.table data.table rbindlist
 #' @importFrom dplyr arrange filter left_join mutate rename row_number select
 #' @importFrom jsonlite fromJSON
-#' @importFrom lubridate ymd year month
+#' @importFrom lubridate ymd year month is.Date
 #' @importFrom magrittr %>%
 #' @importFrom purrr map_dfr imap_dfr
 #' @importFrom tibble tibble
@@ -459,5 +459,4 @@ get_labels<-function(var_name, year_range = "2023"){
   }else{
     return(var_labels_per_year)}
 }
-
 
