@@ -79,10 +79,11 @@ installed properly and that it can be loaded</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">getCPS</span><span class="op">)</span></span></code></pre></div>
 <p>If you were able to run call above without errors, you should be good
 to go! If you need help installing the package, the installation
-instrutions can be found at the main page of this website <a href="../index.html">Click Here</a></p>
+instrutions can be found at the main page of this website: <a href="../index.html">Click Here</a></p>
 <div class="section level2">
-<h2 id="pulling-data-for-a-single-state">
-<strong>Pulling data for a single state</strong><a class="anchor" aria-label="anchor" href="#pulling-data-for-a-single-state"></a>
+<h2 id="pulling-data-for-a-single-state-using-get_cps_data_state">
+<strong>Pulling Data for a Single State Using
+<code>get_cps_data_state()</code> </strong><a class="anchor" aria-label="anchor" href="#pulling-data-for-a-single-state-using-get_cps_data_state"></a>
 </h2>
 <p>Data for a single state can be pulled by using
 <strong><code><a href="../reference/get_cps_data_state.html">get_cps_data_state()</a></code></strong> and passing a year
@@ -160,7 +161,7 @@ This will print the suggested weight for
 <strong><code>PEMLR</code></strong>, by default
 <strong><code>year</code></strong> is set to <strong>“2023”</strong> as
 suggested weights rarely differ from year to year in the CPS Basic
-microdata. :</li>
+microdata.</li>
 </ul>
 </li>
 </ul>
@@ -175,6 +176,54 @@ type <date> making it easy to sort, filter and manipulate data based on
 specific dates.</date>
 </li>
 </ul>
+</div>
+</div>
+<div class="section level2">
+<h2 id="using-get_cps_data_all_states-to-obtain-data-for-all-states">
+<strong>Using <code>get_cps_data_all_states()</code> to Obtain Data
+for All States</strong><a class="anchor" aria-label="anchor" href="#using-get_cps_data_all_states-to-obtain-data-for-all-states"></a>
+</h2>
+<p>In some cases, you might be interested in pulling CPS data for all
+states. This can be achieved using the
+<strong><code><a href="../reference/get_cps_data_all_states.html">get_cps_data_all_states()</a></code></strong> function.
+Similar to <code><a href="../reference/get_cps_data_state.html">get_cps_data_state()</a></code>, you need to pass the year
+range and the variables you are interested in.</p>
+<p>If you want to filter the data to include only specific states, you
+can use the <code>state_filter</code> argument, passing it as a
+character vector of state FIPS codes. If you leave
+<code>state_filter</code> as FALSE, the function will return data for
+all states.</p>
+<p>Remember to provide your Census API key if you haven’t set it in your
+<strong><code>.Renviron</code></strong> file.</p>
+<div class="section level3">
+<h3 id="example---fetching-data-for-all-states">Example - Fetching Data for All States<a class="anchor" aria-label="anchor" href="#example---fetching-data-for-all-states"></a>
+</h3>
+<p>The following example demonstrates how to fetch data for the years
+2022 and 2023, including variables related to the respondent’s sex
+(<strong><code>PESEX</code></strong>) and age
+(<strong><code>PRTAGE</code></strong>). We will retrieve data for all
+states without filtering.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">all_states_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_cps_data_all_states.html">get_cps_data_all_states</a></span><span class="op">(</span>year_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2022</span>, <span class="fl">2023</span><span class="op">)</span>,</span>
+<span>                                           variable_list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"PESEX"</span>, <span class="st">"PRTAGE"</span><span class="op">)</span>,</span>
+<span>                                           census_api_key <span class="op">=</span> <span class="st">"YOUR CENSUS API KEY"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">all_states_data</span><span class="op">)</span></span></code></pre></div>
+<p>The output will be a <strong><code>data.frame</code></strong> with
+the requested data. If you wish to fetch data only for specific states,
+you can specify them as follows:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">specific_states_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_cps_data_all_states.html">get_cps_data_all_states</a></span><span class="op">(</span>year_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2022</span>, <span class="fl">2023</span><span class="op">)</span>,</span>
+<span>                                                variable_list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"PESEX"</span>, <span class="st">"PRTAGE"</span><span class="op">)</span>,</span>
+<span>                                                state_filter <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"32"</span>, <span class="st">"06"</span><span class="op">)</span>, <span class="co"># Example for Nevada and California</span></span>
+<span>                                                census_api_key <span class="op">=</span> <span class="st">"YOUR CENSUS API KEY"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">specific_states_data</span><span class="op">)</span></span></code></pre></div>
+<p>The output will be similar to that generated by <a href="#pulling-data-for-a-single-state-using-get_cps_data_state"><code>get_cps_data_state()</code></a>,
+with the only difference being that data will be generated for all
+states and not just one. Remember, working with data covering all states
+can be quite extensive and might require considerable computational
+resources depending on the volume of data and the capacity of your
+system, if you encounter errors due to memory allocation, breaking up
+the data retrieval into chunks is recommended.</p>
 </div>
 </div>
   </div>
