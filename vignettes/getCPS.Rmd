@@ -15,9 +15,9 @@ In order to get started we need to make sure that getCPS has beeen installed pro
 library(getCPS)
 ```
 
-If you were able to run call above without errors, you should be good to go! If you need help installing the package, the installation instrutions can be found at the main page of this website [Click Here](../index.html)
+If you were able to run call above without errors, you should be good to go! If you need help installing the package, the installation instrutions can be found at the main page of this website: [Click Here](../index.html)
 
-## **Pulling data for a single state**
+## **Pulling Data for a Single State Using `get_cps_data_state()` **
 
 Data for a single state can be pulled by using **`get_cps_data_state()`** and passing a year range and variable list as vectors, along with a FIPS state code. In this example we will use my home state of Nevada, whose FIPS state code is **'32'**, and we will pull data on labor force employment status **(PEMLR)** and age **(PRTAGE)** for each respondent. You must also include a Census API key in the function, or have one stored in your **`.Renviron`** file as **`"CENSUS_API_KEY"`**. If you don't have a Census API key you can obtain one at: [api.census.gov](https://api.census.gov/data/key_signup.html)
 
@@ -30,7 +30,9 @@ cps_data
 ```
 
 ```{r state data, echo=FALSE}
-cps_data<-get_cps_data_state(year_range = c(2021:2023), variable_list = c('PEMLR', 'PRTAGE'), state_code = "32")
+cps_data<-get_cps_data_state(year_range = c(2021:2023),
+                             variable_list = c('PEMLR', 'PRTAGE'),
+                             state_code = "32")
 head(cps_data,10)
 ```
 
@@ -48,10 +50,40 @@ Our dataframe **`cps_data`** has a couple columns: **`state,PEMLR, PRTAGE, PWCMP
 
 -   **`PWCMPWGT`** and **`PWSSWGT`**, are statistical weights for each response and can be used to estimate aggragate population totals. Even though the weights were not requested explicitly in our **`get_cps_data_state()`** call, the function has built in logic that automatically pulls the suggested weights for each of the variables requested.
 
-    -   If you would like to know the suggested weight of a variable you can use the **`suggested_weight()`** function. For example if you wanted to know the suggested weight for **`PEMLR`** you coude use **`suggested_weight("PEMLR", year = "2023")`**. This will print the suggested weight for **`PEMLR`**, by default **`year`** is set to **"2023"** as suggested weights rarely differ from year to year in the CPS Basic microdata. :
+    -   If you would like to know the suggested weight of a variable you can use the **`suggested_weight()`** function. For example if you wanted to know the suggested weight for **`PEMLR`** you coude use **`suggested_weight("PEMLR", year = "2023")`**. This will print the suggested weight for **`PEMLR`**, by default **`year`** is set to **"2023"** as suggested weights rarely differ from year to year in the CPS Basic microdata.
 ```{r}
 suggested_weight("PEMLR")
 ```
     
 
 -   **`DATE`** is just a column that keeps track of which month the response was recorded. This column is already of data type <date> making it easy to sort, filter and manipulate data based on specific dates.
+
+## **Using `get_cps_data_all_states()` to Obtain Data for All States**
+
+In some cases, you might be interested in pulling CPS data for all states. This can be achieved using the **`get_cps_data_all_states()`** function. Similar to `get_cps_data_state()`, you need to pass the year range and the variables you are interested in.
+
+If you want to filter the data to include only specific states, you can use the `state_filter` argument, passing it as a character vector of state FIPS codes. If you leave `state_filter` as FALSE, the function will return data for all states.
+
+Remember to provide your Census API key if you haven't set it in your **`.Renviron`** file.
+
+### Example - Fetching Data for All States
+
+The following example demonstrates how to fetch data for the years 2022 and 2023, including variables related to the respondent's sex (**`PESEX`**) and age (**`PRTAGE`**). We will retrieve data for all states without filtering.
+
+```{r all-states-data-example, eval=FALSE}
+all_states_data <- get_cps_data_all_states(year_range = c(2022, 2023),
+                                           variable_list = c("PESEX", "PRTAGE"),
+                                           census_api_key = "YOUR CENSUS API KEY")
+head(all_states_data)
+```
+The output will be a **`data.frame`** with the requested data. If you wish to fetch data only for specific states, you can specify them as follows:
+
+```{r all-states-data-example 2, eval=FALSE}
+specific_states_data <- get_cps_data_all_states(year_range = c(2022, 2023),
+                                                variable_list = c("PESEX", "PRTAGE"),
+                                                state_filter = c("32", "06"), # Example for Nevada and California
+                                                census_api_key = "YOUR CENSUS API KEY")
+head(specific_states_data)
+
+```
+The output will be similar to that generated by [`get_cps_data_state()`](#pulling-data-for-a-single-state-using-get_cps_data_state), with the only difference being that data will be generated for all states and not just one. Remember, working with data covering all states can be quite extensive and might require considerable computational resources depending on the volume of data and the capacity of your system, if you encounter errors due to memory allocation, breaking up the data retrieval into chunks is recommended. 
