@@ -61,5 +61,5 @@ invisible(lapply(packages_to_install, install_if_not_present))
 message("All necessary packages have been installed or were already present.")
 
 ```
-
-
+## Further Documentation
+https://aisolori.github.io/getCPS/
