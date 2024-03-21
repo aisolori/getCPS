@@ -34,7 +34,7 @@ devtools::install_local("path_to_downloaded_file/getCPS_0.1.2.tar.gz")
 ### Method 3: ###
 If you are unable to use or install `devtools` the code below will also work, but will require manual installation of necesary dependencies. As you will likely hit errors similar to: `ERROR: dependencies 'cpsR', 'censusapi' are not available for package 'getCPS'`
 ```r
-install.packages("path_to_downloaded_file/getCPS_0.1.1.tar.gz", repos = NULL, type = "source")
+install.packages("path_to_downloaded_file/getCPS_0.1.2.tar.gz", repos = NULL, type = "source")
 ```
 All necessary dependencies can be installed directly via cran by running the following script in R:
 ```r
