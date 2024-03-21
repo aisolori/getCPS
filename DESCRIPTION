@@ -1,7 +1,7 @@
 Package: getCPS
 Type: Package
 Title: Obtain Multiple Years of CPS Basic Microdata from Census API
-Version: 0.1.1
+Version: 0.1.2
 Authors@R:
     person(given = "Antonio",
            family = "Solorio Ramirez",
