@@ -50,9 +50,16 @@ get_cps_data_all_states<- function(year_range, variable_list, state_filter = FAL
 
 
   months = c(1:12)
-  variable_list<-c(variable_list, "gestfips")
+  variable_list<-c(variable_list)
   print("Getting Data...")
   cps_data <- map_dfr(year_range, function(year){
+
+    # Conditioning to add state column depenidng on year
+    if(as.integer(year)>2023){
+      variable_list<-c(variable_list, "STATE")
+    }else{
+      variable_list<-c(variable_list,"gestfips")
+    }
     print(paste("Obtaining Data For Year", year))
     #Loop through months in parallel
     data_per_year <- future_map_dfr(months, function(month){
@@ -268,11 +275,10 @@ label_data <- function(cps_data, variable_list = NULL, date_column = NULL) {
       return(TRUE)
     } else {
       stop(paste0(column_name, " column needs to be converted to <date> data type, its current data type is: ",
-                  class(data[[column_name]], '\n')
-      )
+                  class(data[[column_name]]), '\n')
       )
     }
-  }
+    }
 
   # If date_column is NULL or empty, try to find a 'DATE' column regardless of its case
   if (is.null(date_column)) {
