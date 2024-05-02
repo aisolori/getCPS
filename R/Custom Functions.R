@@ -118,7 +118,7 @@ get_cps_data_state<- function(year_range,variable_list,census_api_key = get_key(
   plan(multisession)
 
   for (var in variable_list) {
-    var_json <- fromJSON(paste0("https://api.census.gov/data/2023/cps/basic/feb/variables/", var, ".json"))
+    var_json <- fromJSON(paste0("https://api.census.gov/data/",max(year_range),"/cps/basic/jan/variables/", var, ".json"))
     if ("suggested-weight" %in% names(var_json)) {
       weight_var <- var_json$`suggested-weight`
       if (!(weight_var %in% variable_list)) {
