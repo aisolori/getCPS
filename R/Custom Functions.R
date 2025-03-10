@@ -78,15 +78,13 @@ get_cps_data_all_states<- function(year_range, variable_list, state_filter = FAL
           state_filter<-as.numeric(state_filter)%>%
             as.character()
 
-          print("Selected States")
-          print(state_filter)
-
           # Removing padding for state fips codes
 
           if(as.integer(year)>2023){
             data <- filter(data, state %in% state_filter)
           }else{
-            data <- filter(data, gestfips %in% state_filter)
+            data <- filter(data, gestfips %in% state_filter)%>%
+              rename(state = gestfips)
           }
         }
 
