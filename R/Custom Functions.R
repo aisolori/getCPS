@@ -72,9 +72,16 @@ get_cps_data_all_states<- function(year_range, variable_list, state_filter = FAL
           key = census_api_key)) %>%
           mutate(date = ymd(paste(year,month,"01",sep = "-")))
 
+
+
         # Apply state filter only if state_filter is not FALSE
         if (state_filter != FALSE) {
-          data <- filter(data, gestfips == state_filter)
+
+          # Removing padding for state fips codes
+          state_filter<-as.numeric(state_filter)%>%
+            as.character()
+
+          data <- filter(data, gestfips %in% state_filter)
         }
 
         return(data)
@@ -118,7 +125,7 @@ get_cps_data_state<- function(year_range,variable_list,census_api_key = get_key(
   plan(multisession)
 
   for (var in variable_list) {
-    var_json <- fromJSON(paste0("https://api.census.gov/data/",max(year_range),"/cps/basic/jan/variables/", var, ".json"))
+    var_json <- fromJSON(paste0("https://api.census.gov/data/2023/cps/basic/feb/variables/", var, ".json"))
     if ("suggested-weight" %in% names(var_json)) {
       weight_var <- var_json$`suggested-weight`
       if (!(weight_var %in% variable_list)) {
