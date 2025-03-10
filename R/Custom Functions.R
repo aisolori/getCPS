@@ -33,7 +33,6 @@ get_cps_data_all_states<- function(year_range, variable_list, state_filter = FAL
   check_key(census_api_key)
   test_key(census_api_key)
   plan(multisession)
-  state_filter<-as.character(state_filter)
   weight_list<- c()
 
   print("Getting JSONs")
@@ -75,13 +74,20 @@ get_cps_data_all_states<- function(year_range, variable_list, state_filter = FAL
 
 
         # Apply state filter only if state_filter is not FALSE
-        if (state_filter != FALSE) {
-
-          # Removing padding for state fips codes
+        if (!isFALSE(state_filter)) {
           state_filter<-as.numeric(state_filter)%>%
             as.character()
 
-          data <- filter(data, gestfips %in% state_filter)
+          print("Selected States")
+          print(state_filter)
+
+          # Removing padding for state fips codes
+
+          if(as.integer(year)>2023){
+            data <- filter(data, state %in% state_filter)
+          }else{
+            data <- filter(data, gestfips %in% state_filter)
+          }
         }
 
         return(data)
