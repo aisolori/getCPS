@@ -126,8 +126,9 @@ get_cps_data_state<- function(year_range,variable_list,census_api_key = get_key(
   test_key(census_api_key)
 
   weight_list = c()
-  plan(multisession)
-
+  plan(multisession
+       )
+  # Attaching suggested weights
   for (var in variable_list) {
     var_json <- fromJSON(paste0("https://api.census.gov/data/",max(year_range),"/cps/basic/jan/variables/", var, ".json"))
     if ("suggested-weight" %in% names(var_json)) {
@@ -309,12 +310,8 @@ label_data <- function(cps_data, variable_list = NULL, date_column = NULL) {
   }
 
 
-
-  #cps_data$year <- as.character(year(cps_data$DATE))
- # year_range <- year(cps_data$DATE) %>% unique()
-
   if(length(variable_list) == 0){
-    variables_not_to_label <- c("HWHHWGT", "PWSSWGT", "DATE", "year", "STATE", 'GESTFIPS')
+    variables_not_to_label <- c("HWHHWGT", "PWSSWGT", "DATE", "year", "STATE", 'GESTFIPS', 'state')
   variable_list <- names(cps_data)[!(names(cps_data)) %in% variables_not_to_label]}
 
   cat("Downloading Labels from JSON files\n")
