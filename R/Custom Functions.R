@@ -37,7 +37,7 @@ get_cps_data_all_states<- function(year_range, variable_list, state_filter = FAL
 
   print("Getting JSONs")
   for (var in variable_list) {
-    var_json <- fromJSON(paste0("https://api.census.gov/data/2023/cps/basic/feb/variables/", toupper(var), ".json"))
+    var_json <- fromJSON(paste0("https://api.census.gov/data/",max(year_range),"/cps/basic/jan/variables/", toupper(var), ".json"))
     if ("suggested-weight" %in% names(var_json)) {
       weight_var <- var_json$`suggested-weight`
       if (!(weight_var %in% variable_list)) {
@@ -129,7 +129,7 @@ get_cps_data_state<- function(year_range,variable_list,census_api_key = get_key(
   plan(multisession)
 
   for (var in variable_list) {
-    var_json <- fromJSON(paste0("https://api.census.gov/data/2023/cps/basic/feb/variables/", var, ".json"))
+    var_json <- fromJSON(paste0("https://api.census.gov/data/",max(year_range),"/cps/basic/jan/variables/", var, ".json"))
     if ("suggested-weight" %in% names(var_json)) {
       weight_var <- var_json$`suggested-weight`
       if (!(weight_var %in% variable_list)) {
@@ -314,7 +314,7 @@ label_data <- function(cps_data, variable_list = NULL, date_column = NULL) {
  # year_range <- year(cps_data$DATE) %>% unique()
 
   if(length(variable_list) == 0){
-    variables_not_to_label <- c("HWHHWGT", "PWSSWGT", "DATE", "year", "state")
+    variables_not_to_label <- c("HWHHWGT", "PWSSWGT", "DATE", "year", "STATE", 'GESTFIPS')
   variable_list <- names(cps_data)[!(names(cps_data)) %in% variables_not_to_label]}
 
   cat("Downloading Labels from JSON files\n")
@@ -413,7 +413,7 @@ label_data <- function(cps_data, variable_list = NULL, date_column = NULL) {
 #' \url{https://api.census.gov/data.html}
 #'
 #' @export
-suggested_weight<-function(variable, year = "2023"){
+suggested_weight<-function(variable, year = "2024"){
   variable = as.character(variable)
   var_json <- tryCatch({fromJSON(paste0("https://api.census.gov/data/", year, "/cps/basic/feb/variables/", toupper(variable), ".json"))},
                        error = function(e){message(paste0("Unable to establish connection\n", toupper(variable), " might not exist for year ",year))
@@ -432,7 +432,7 @@ suggested_weight<-function(variable, year = "2023"){
 #' It constructs a list of labels fetched from the Census API for the given variable(s) and year(s).
 #'
 #' @param var_name A character vector of variable name(s) to get labels for.
-#' @param year_range A character vector specifying the year(s) for which labels are required, default is "2023".
+#' @param year_range A character vector specifying the year(s) for which labels are required, default is "2024".
 #'
 #' @return If a single year and variable are provided, the function returns a data frame.
 #'         For multiple years or variables, it returns a nested list of data frames.
