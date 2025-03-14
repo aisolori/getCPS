@@ -165,7 +165,7 @@ get_cps_data_state<- function(year_range,variable_list,census_api_key = get_key(
   }, .progress = TRUE)
 
 
-  return(cps_data)
+  return(cps_data%>%rename_with(toupper))
 }
 
 #' Check for Changes in JSON Responses from Census's CPS Basic Microdata Across Years and Months
