@@ -1,0 +1,118 @@
+---
+title: "Getting Started with getCPS"
+output:
+  html_document:
+    df_print: paged
+---
+
+**getCPS** is a package that allows for the fast fetching of CPS Basic microdata from the Census Bureau's API. Working with the Census Bureau's API can be a bit complicated and tedious and hence the main motivation behind this package.
+
+In order to get started we need to make sure that getCPS has beeen installed properly and that it can be loaded
+
+
+
+```{r load library, message=FALSE, warning=FALSE}
+library(getCPS)
+```
+
+If you were able to run call above without errors, you should be good to go! If you need help installing the package, the installation instrutions can be found at the main page of this website: [Click Here](../index.html)
+
+## **Pulling Data for a Single State Using `get_cps_data_state()` **
+
+Data for a single state can be pulled by using **`get_cps_data_state()`** and passing a year range and variable list as vectors, along with a FIPS state code. In this example we will use my home state of Nevada, whose FIPS state code is **'32'**, and we will pull data on labor force employment status **(PEMLR)** and age **(PRTAGE)** for each respondent. You must also include a Census API key in the function, or have one stored in your **`.Renviron`** file as **`"CENSUS_API_KEY"`**. If you don't have a Census API key you can obtain one at: [api.census.gov](https://api.census.gov/data/key_signup.html)
+
+### Example - Fetching Data for a Single State
+
+```{r code to display, eval=FALSE}
+cps_data<-get_cps_data_state(year_range = c(2021:2023),
+                             variable_list = c('PEMLR', 'PRTAGE'),
+                             state_code = "32",
+                             census_api_key = "YOUR CENSUS API KEY")
+head(cps_data,10)
+```
+
+```{r state data, echo=FALSE}
+cps_data<-get_cps_data_state(year_range = c(2021:2023),
+                             variable_list = c('PEMLR', 'PRTAGE'),
+                             state_code = "32")
+head(cps_data,10)
+```
+
+This should have returned a **`data.frame`** object, with some warnings about months that it was unable to retrieve. This guide was written on November 1st of 2023, so CPS microdata for the months of October, November, and December are not yet available, and hence why we see the warnings. The warnings can be useful in catching errors. For example sometimes certain variables are only available during certain time periods, and trying to retrieve variables in a time period when they are not available will trigger this warning.
+
+### **Understanding the output:**
+
+Our dataframe **`cps_data`** has a couple columns: **`state,PEMLR, PRTAGE, PWCMPWGT, PWSSWGT, and DATE`**.
+
+-   The **`state`** column represents the state FIPS code for the person's who information is recorded.
+
+-   **`PEMLR`** was one of the variables we requested, and is a categorical variable, each value represents a unique code that matches the labor force status for each respondent, later in this guide we will see how we can convert these codes to labels which will make it easier to understand the response recorded.
+
+-   **`PRTAGE`** as mentioned earlier is the age of the respondent, topcoded in order to protect the privacy of the respondent. For example someone with an age of 97 would be topcoded at 85.
+
+-   **`PWCMPWGT`** and **`PWSSWGT`**, are statistical weights for each response and can be used to estimate aggragate population totals. Even though the weights were not requested explicitly in our **`get_cps_data_state()`** call, the function has built in logic that automatically pulls the suggested weights for each of the variables requested.
+
+    -   If you would like to know the suggested weight of a variable you can use the **`suggested_weight()`** function. For example if you wanted to know the suggested weight for **`PEMLR`** you coude use **`suggested_weight("PEMLR", year = "2023")`**. This will print the suggested weight for **`PEMLR`**, by default **`year`** is set to **"2023"** as suggested weights rarely differ from year to year in the CPS Basic microdata.
+```{r}
+suggested_weight("PEMLR")
+```
+    
+
+-   **`DATE`** is just a column that keeps track of which month the response was recorded. This column is already of data type <date> making it easy to sort, filter and manipulate data based on specific dates.
+
+## **Using `get_cps_data_all_states()` to Obtain Data for All States**
+
+In some cases, you might be interested in pulling CPS data for all states. This can be achieved using the **`get_cps_data_all_states()`** function. Similar to `get_cps_data_state()`, you need to pass the year range and the variables you are interested in.
+
+If you want to filter the data to include only specific states, you can use the `state_filter` argument, passing it as a character vector of state FIPS codes. If you leave `state_filter` as FALSE, the function will return data for all states.
+
+Remember to provide your Census API key if you haven't set it in your **`.Renviron`** file.
+
+### Example - Fetching Data for All States
+
+The following example demonstrates how to fetch data for the years 2022 and 2023, including variables related to the respondent's sex (**`PESEX`**) and age (**`PRTAGE`**). We will retrieve data for all states without filtering.
+
+```{r all-states-data-example, eval=FALSE}
+all_states_data <- get_cps_data_all_states(year_range = c(2022, 2023),
+                                           variable_list = c("PESEX", "PRTAGE"),
+                                           census_api_key = "YOUR CENSUS API KEY")
+head(all_states_data)
+```
+The output will be a **`data.frame`** with the requested data. If you wish to fetch data only for specific states, you can specify them as follows:
+
+```{r all-states-data-example 2, eval=FALSE}
+specific_states_data <- get_cps_data_all_states(year_range = c(2022, 2023),
+                                                variable_list = c("PESEX", "PRTAGE"),
+                                                state_filter = c("32", "06"), # Example for Nevada and California
+                                                census_api_key = "YOUR CENSUS API KEY")
+head(specific_states_data)
+
+```
+The output will be similar to that generated by [`get_cps_data_state`](#pulling-data-for-a-single-state-using-get_cps_data_state), with the only difference being that data will be generated for all states and not just one. Remember, working with data covering all states can be quite extensive and might require considerable computational resources depending on the volume of data and the capacity of your system, if you encounter errors due to memory allocation, breaking up the data retrieval into chunks is recommended. 
+
+## **Obtaining Labels for Coded Variables**
+As we mentioned [earlier](#pulling-data-for-a-single-state-using-get_cps_data_state) in this guide, some variables such as **`PEMLR`** are categorical variables, when we run either **`get_cps_data_state()`** or **`get_cps_data_all_states()`**, these are retrieved as codes where each code represents a different response category. Within **getCPS** there are two functions which can help us match the categorical variable codes to their corresponding labels.
+
+### Example - Retreiving variable labels using **`get_labels()`**
+If we wanted to retrieve the variable labels for **`PEMLR`** in **2023** we could use **`get_labels()`** in the following manner:
+```{r}
+get_labels("PEMLR", year_range = "2023")
+```
+If a single year and variable are provided, the function returns a data frame with the corresponding code and label matches. For multiple years or variables, it returns a nested list of data frames. By default **`year_range`** is set to **"2023"**.
+
+### Example - Retreiving variable labels for multiple years using **`get_labels()`**:
+When using multiple variables or years in the *year_range* argument, each dataframe can be accesed by using either **`[]`** or the **`$`** operator, as in the the following two examples
+```{r}
+labels_mult_years <- get_labels("PERRP", year_range = c(2019:2020))
+labels_mult_years[["PERRP"]][["2019"]]
+```
+```{r}
+labels_mult_years$PERRP$`2020`
+```
+## **Automatically Labeling of Retrieved CPS Data Frames**
+Aside from being able to retrieve the labels for categorical variables, it is also possible to automatically label the output of either **`get_cps_data_state()`** and **`get_cps_data_all_state()`**. This can be done by passsing the output of either of the aforementioned functions into the **`label_data()`** fuction. 
+```{r}
+label_data(cps_data)
+```
+**`label_data()`** will try to automatically detect categorical variables and create two new columns, **`code_{variable}`** and **`label_{variable}`**, corresponding to the original variable code and the matching label for the code. In the above example we can see that **`PEMLR`** got replaced by **`code_PEMLR`** and **`label_PEMLR`**
+
