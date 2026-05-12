@@ -1,5 +1,5 @@
 #' @importFrom data.table data.table rbindlist
-#' @importFrom dplyr arrange filter left_join mutate rename row_number select
+#' @importFrom dplyr arrange filter left_join mutate rename rename_with row_number select
 #' @importFrom jsonlite fromJSON
 #' @importFrom lubridate ymd year month is.Date
 #' @importFrom magrittr %>%
@@ -37,7 +37,7 @@ get_cps_data_all_states<- function(year_range, variable_list, state_filter = FAL
 
   print("Getting JSONs")
   for (var in variable_list) {
-    var_json <- fromJSON(paste0("https://api.census.gov/data/",max(year_range),"/cps/basic/jan/variables/", toupper(var), ".json"))
+    var_json <- fromJSON(paste0("https://api.census.gov/data/",max(year_range),"/cps/basic/jan/variables/", toupper(var), ".json?key=", census_api_key))
     if ("suggested-weight" %in% names(var_json)) {
       weight_var <- var_json$`suggested-weight`
       if (!(weight_var %in% variable_list)) {
@@ -130,7 +130,7 @@ get_cps_data_state<- function(year_range,variable_list,census_api_key = get_key(
        )
   # Attaching suggested weights
   for (var in variable_list) {
-    var_json <- fromJSON(paste0("https://api.census.gov/data/",max(year_range),"/cps/basic/jan/variables/", var, ".json"))
+    var_json <- fromJSON(paste0("https://api.census.gov/data/",max(year_range),"/cps/basic/jan/variables/", var, ".json?key=", census_api_key))
     if ("suggested-weight" %in% names(var_json)) {
       weight_var <- var_json$`suggested-weight`
       if (!(weight_var %in% variable_list)) {
@@ -176,6 +176,7 @@ get_cps_data_state<- function(year_range,variable_list,census_api_key = get_key(
 #'
 #' @param variable_list A list of variable names for which the JSON data will be fetched and compared.
 #' @param year_range A vector of years over which the JSON data should be checked for changes.
+#' @param census_api_key Your Census API key. Defaults to the key stored in the system environment "CENSUS_API_KEY".
 #'
 #' @return A data frame with columns 'variable', 'year', 'month', 'same_as_previous', and 'found'. Each row corresponds
 #'         to a variable, a year, and a month. 'same_as_previous' is TRUE if the JSON data for that variable, year,
@@ -190,7 +191,8 @@ get_cps_data_state<- function(year_range,variable_list,census_api_key = get_key(
 #' }
 #'
 #' @export
-json_changes <- function(variable_list, year_range) {
+json_changes <- function(variable_list, year_range, census_api_key = get_key()) {
+  check_key(census_api_key)
 
   process_variable_year <- function(var, year) {
 
@@ -198,7 +200,7 @@ json_changes <- function(variable_list, year_range) {
     months <- tolower(month.abb)
 
     prev_json <- tryCatch({
-      fromJSON(paste0("https://api.census.gov/data/", year - 1, "/cps/basic/", months[12], "/variables/", var, ".json"))
+      fromJSON(paste0("https://api.census.gov/data/", year - 1, "/cps/basic/", months[12], "/variables/", var, ".json?key=", census_api_key))
     }, error = function(e) {
       NULL
     },warning=function(w){NULL})
@@ -208,7 +210,7 @@ json_changes <- function(variable_list, year_range) {
       prev_year <- ifelse(month == 1, year - 1, year)
 
       var_json <- tryCatch({
-        fromJSON(paste0("https://api.census.gov/data/", year, "/cps/basic/", months[month], "/variables/", var, ".json"))
+        fromJSON(paste0("https://api.census.gov/data/", year, "/cps/basic/", months[month], "/variables/", var, ".json?key=", census_api_key))
       }, error = function(e) {
         NULL
       },warning=function(w){NULL})
@@ -262,6 +264,7 @@ json_changes <- function(variable_list, year_range) {
 #'        from "DATE". This argument ensures the function can work even if the date column has different cases
 #'        (e.g., "Date", "date", "daTe") or entirely different names. If omitted, the function will look for a column
 #'        named "DATE" (case-insensitive).
+#' @param census_api_key Your Census API key. Defaults to the key stored in the system environment "CENSUS_API_KEY".
 #'
 #' @return A data frame with labeled variables. If a label does not exist for a particular variable
 #'         or year, the original value remains unchanged.
@@ -280,7 +283,8 @@ json_changes <- function(variable_list, year_range) {
 #' }
 #'
 #' @export
-label_data <- function(cps_data, variable_list = NULL, date_column = NULL) {
+label_data <- function(cps_data, variable_list = NULL, date_column = NULL, census_api_key = get_key()) {
+  check_key(census_api_key)
   # Helper function to check if a column is of Date type
   check_date_type <- function(column_name, data) {
     if (is.Date(data[[column_name]])) {
@@ -319,7 +323,7 @@ label_data <- function(cps_data, variable_list = NULL, date_column = NULL) {
     variable_labels_per_year <- list()
 
     for (year in year_range) {
-      var_json <- fromJSON(paste0("https://api.census.gov/data/", year, "/cps/basic/feb/variables/", variable, ".json"))
+      var_json <- fromJSON(paste0("https://api.census.gov/data/", year, "/cps/basic/feb/variables/", variable, ".json?key=", census_api_key))
       if (!("is-weight" %in% names(var_json)) & ("values" %in% names(var_json))) {
         labels <- var_json$values$item
         pattern <- "^0[0-9]+$"
@@ -400,6 +404,7 @@ label_data <- function(cps_data, variable_list = NULL, date_column = NULL) {
 #'
 #' @param variable Character. The census variable for which the suggested weight is to be fetched.
 #' @param year Character. The year for which to fetch the data. Default is "2023". Weights don't tend to change over the years.
+#' @param census_api_key Your Census API key. Defaults to the key stored in the system environment "CENSUS_API_KEY".
 #'
 #' @return If the variable has a suggested weight, it prints the weight. If not, a message is shown indicating that the variable does not have a suggested weight.
 #'
@@ -410,9 +415,10 @@ label_data <- function(cps_data, variable_list = NULL, date_column = NULL) {
 #' \url{https://api.census.gov/data.html}
 #'
 #' @export
-suggested_weight<-function(variable, year = "2024"){
+suggested_weight<-function(variable, year = "2024", census_api_key = get_key()){
+  check_key(census_api_key)
   variable = as.character(variable)
-  var_json <- tryCatch({fromJSON(paste0("https://api.census.gov/data/", year, "/cps/basic/feb/variables/", toupper(variable), ".json"))},
+  var_json <- tryCatch({fromJSON(paste0("https://api.census.gov/data/", year, "/cps/basic/feb/variables/", toupper(variable), ".json?key=", census_api_key))},
                        error = function(e){message(paste0("Unable to establish connection\n", toupper(variable), " might not exist for year ",year))
                          return(NULL)},
                        warning=function(w){NULL})
@@ -430,6 +436,7 @@ suggested_weight<-function(variable, year = "2024"){
 #'
 #' @param var_name A character vector of variable name(s) to get labels for.
 #' @param year_range A character vector specifying the year(s) for which labels are required, default is "2024".
+#' @param census_api_key Your Census API key. Defaults to the key stored in the system environment "CENSUS_API_KEY".
 #'
 #' @return If a single year and variable are provided, the function returns a data frame.
 #'         For multiple years or variables, it returns a nested list of data frames.
@@ -444,7 +451,8 @@ suggested_weight<-function(variable, year = "2024"){
 #' }
 #'
 #' @export
-get_labels<-function(var_name, year_range = "2023"){
+get_labels<-function(var_name, year_range = "2023", census_api_key = get_key()){
+  check_key(census_api_key)
 
   # Check if year_range is using its default value
   if (identical(year_range, "2023")) {
@@ -457,7 +465,7 @@ get_labels<-function(var_name, year_range = "2023"){
   for (year in year_range) {
     #var_json is a nested list of the response we get from the api
     var_json <- fromJSON(
-      paste0("https://api.census.gov/data/", year, "/cps/basic/jan/variables/", toupper(var_name), ".json"))
+      paste0("https://api.census.gov/data/", year, "/cps/basic/jan/variables/", toupper(var_name), ".json?key=", census_api_key))
 
     #Construct df from var_json
     var_labels_df<-data.frame(

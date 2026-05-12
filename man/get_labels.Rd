@@ -4,12 +4,14 @@
 \alias{get_labels}
 \title{Function to get CPS Basic Variable Labels}
 \usage{
-get_labels(var_name, year_range = "2023")
+get_labels(var_name, year_range = "2023", census_api_key = get_key())
 }
 \arguments{
 \item{var_name}{A character vector of variable name(s) to get labels for.}
 
-\item{year_range}{A character vector specifying the year(s) for which labels are required, default is "2023".}
+\item{year_range}{A character vector specifying the year(s) for which labels are required, default is "2024".}
+
+\item{census_api_key}{Your Census API key. Defaults to the key stored in the system environment "CENSUS_API_KEY".}
 }
 \value{
 If a single year and variable are provided, the function returns a data frame.

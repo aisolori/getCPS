@@ -4,12 +4,14 @@
 \alias{json_changes}
 \title{Check for Changes in JSON Responses from Census's CPS Basic Microdata Across Years and Months}
 \usage{
-json_changes(variable_list, year_range)
+json_changes(variable_list, year_range, census_api_key = get_key())
 }
 \arguments{
 \item{variable_list}{A list of variable names for which the JSON data will be fetched and compared.}
 
 \item{year_range}{A vector of years over which the JSON data should be checked for changes.}
+
+\item{census_api_key}{Your Census API key. Defaults to the key stored in the system environment "CENSUS_API_KEY".}
 }
 \value{
 A data frame with columns 'variable', 'year', 'month', 'same_as_previous', and 'found'. Each row corresponds

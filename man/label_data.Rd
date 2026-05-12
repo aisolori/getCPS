@@ -4,7 +4,12 @@
 \alias{label_data}
 \title{Label CPS Data Variables}
 \usage{
-label_data(cps_data, variable_list = NULL, date_column = NULL)
+label_data(
+  cps_data,
+  variable_list = NULL,
+  date_column = NULL,
+  census_api_key = get_key()
+)
 }
 \arguments{
 \item{cps_data}{A data frame containing CPS data. It must have a date column from which the year can be extracted.
@@ -20,6 +25,8 @@ get_cps_data_all_states().}
 from "DATE". This argument ensures the function can work even if the date column has different cases
 (e.g., "Date", "date", "daTe") or entirely different names. If omitted, the function will look for a column
 named "DATE" (case-insensitive).}
+
+\item{census_api_key}{Your Census API key. Defaults to the key stored in the system environment "CENSUS_API_KEY".}
 }
 \value{
 A data frame with labeled variables. If a label does not exist for a particular variable

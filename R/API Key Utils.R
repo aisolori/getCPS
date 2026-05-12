@@ -6,7 +6,9 @@ get_key <- function() {
 
   if (key == "") {
     stop(
-      "Census API key not found, supply with `census_api_key` argument or env var `CENSUS_API_KEY`",
+      "Census API key not found. Set CENSUS_API_KEY in your .Renviron file (e.g. CENSUS_API_KEY=\"your_key_here\") ",
+      "or pass your key directly via the `census_api_key` argument.\n",
+      "To obtain a Census API key, visit: https://api.census.gov/data/key_signup.html",
       call. = FALSE
     )
   }

@@ -4,12 +4,14 @@
 \alias{suggested_weight}
 \title{Retrieve Suggested Weight for a Given CPS Variable}
 \usage{
-suggested_weight(variable, year = "2023")
+suggested_weight(variable, year = "2024", census_api_key = get_key())
 }
 \arguments{
 \item{variable}{Character. The census variable for which the suggested weight is to be fetched.}
 
 \item{year}{Character. The year for which to fetch the data. Default is "2023". Weights don't tend to change over the years.}
+
+\item{census_api_key}{Your Census API key. Defaults to the key stored in the system environment "CENSUS_API_KEY".}
 }
 \value{
 If the variable has a suggested weight, it prints the weight. If not, a message is shown indicating that the variable does not have a suggested weight.

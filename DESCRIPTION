@@ -1,14 +1,14 @@
 Package: getCPS
 Type: Package
 Title: Obtain Multiple Years of CPS Basic Microdata from Census API
-Version: 0.1.2
+Version: 0.2.0
 Authors@R:
     person(given = "Antonio",
            family = "Solorio Ramirez",
            role = c("aut", "cre"),
            email = "aisolorio@detr.nv.gov")
 Description: A collection of wrappers around the 'cpsR' and 'censusapi' packages.
-    Usefull for collecting multiple years of Current Population Survey (CPS)
+    Useful for collecting multiple years of Current Population Survey (CPS)
     microdata. Makes use of parallel processing through the 'furrr' package to speed
     up data retrieval and labeling. 
 License: MIT
@@ -27,4 +27,4 @@ Depends:
     cpsR (>= 0.7.0),
     censusapi (>= 0.8.0),
     pbapply (>= 1.7-2)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
