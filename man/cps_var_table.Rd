@@ -4,7 +4,7 @@
 \alias{cps_var_table}
 \title{Retrieve a Table of Available CPS Basic Variables}
 \usage{
-cps_var_table(year = "2023", month = "jan")
+cps_var_table(year = "2023", month = "jan", census_api_key = get_key())
 }
 \arguments{
 \item{year}{Character string specifying the desired year (default is "2023").}

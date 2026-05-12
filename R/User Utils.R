@@ -29,7 +29,7 @@ NULL
 #'}
 #'
 #' @export
-cps_var_table <- function(year = "2023", month = "jan") {
+cps_var_table <- function(year = "2023", month = "jan", census_api_key = get_key()) {
 
   # If month is numeric
   if(is.numeric(month)) {
@@ -41,7 +41,7 @@ cps_var_table <- function(year = "2023", month = "jan") {
     month <- month.abb[match(tolower(month), tolower(month.name))]
   }
 
-  url <- paste0("https://api.census.gov/data/", as.character(year), "/cps/basic/", tolower(month), "/variables.html")
+  url <- paste0("https://api.census.gov/data/", as.character(year), "/cps/basic/", tolower(month), "/variables.html?key=", census_api_key)
 
   table_data <- url %>%
     read_html() %>%
